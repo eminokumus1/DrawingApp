@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#9D9A9A"
     tools:context=".MainActivity">
 
     <com.eminokumus.drawingapp.DrawingView
@@ -12,9 +13,19 @@
         android:layout_height="0dp"
         android:layout_margin="5dp"
         android:background="@drawable/bg_drawing_view_layout"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/brushImageButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/brushImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_brush"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:scaleType="fitXY"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

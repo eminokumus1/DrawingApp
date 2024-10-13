@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 
@@ -15,7 +16,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var canvasBitmap: Bitmap? = null
     private var drawPaint: Paint? = null
     private var canvasPaint: Paint? = null
-    private var brushSize: Float = 0.toFloat()
+    private var brushSize: Float = 0f
     private var color = Color.BLACK
     private var canvas: Canvas? = null
     private val paths = ArrayList<CustomPath>()
@@ -35,16 +36,20 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         super.onDraw(canvas)
         canvas.drawBitmap(canvasBitmap!!, 0f, 0f, canvasPaint)
 
-        for (path in paths){
-            drawPaint!!.strokeWidth = path.brushThickness
-            drawPaint!!.color = path.color
-            canvas.drawPath(path, drawPaint!!)
-        }
+        drawAllPathsTo(canvas)
 
         if (!drawPath!!.isEmpty) {
             drawPaint!!.strokeWidth = drawPath!!.brushThickness
             drawPaint!!.color = drawPath!!.color
             canvas.drawPath(drawPath!!, drawPaint!!)
+        }
+    }
+
+    private fun drawAllPathsTo(canvas: Canvas) {
+        for (path in paths) {
+            drawPaint!!.strokeWidth = path.brushThickness
+            drawPaint!!.color = path.color
+            canvas.drawPath(path, drawPaint!!)
         }
     }
 
@@ -73,6 +78,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
                 paths.add(drawPath!!)
                 drawPath = CustomPath(color, brushSize)
             }
+
             else -> return false
         }
         invalidate()
@@ -87,7 +93,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         drawPath = CustomPath(color, brushSize)
         setUpDrawPaint()
         canvasPaint = Paint(Paint.DITHER_FLAG)
-        brushSize = 20.toFloat()
+        brushSize = 20f
     }
 
     private fun setUpDrawPaint() {
@@ -98,8 +104,18 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         drawPaint!!.strokeCap = Paint.Cap.ROUND
     }
 
+    fun setSizeForBrush(newSize: Float) {
+        brushSize = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            newSize,
+            resources.displayMetrics
+        )
+        drawPaint!!.strokeWidth = brushSize
+    }
 
     internal inner class CustomPath(var color: Int, var brushThickness: Float) : Path() {
 
     }
+
+
 }
