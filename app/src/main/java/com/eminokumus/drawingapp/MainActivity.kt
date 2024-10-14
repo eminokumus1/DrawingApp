@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
             val randomColor = generateRandomColor()
             binding.drawingView.setColor(randomColor)
             setPalletColorToPressed(it as ImageButton)
-            setPalletColorToPressed(currentColorImageButton!!)
+            setPalletColorToNormal(currentColorImageButton!!)
             currentColorImageButton = it
         }
     }
