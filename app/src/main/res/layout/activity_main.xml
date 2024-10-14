@@ -6,17 +6,36 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.eminokumus.drawingapp.DrawingView
-        android:id="@+id/drawingView"
+    <FrameLayout
+        android:id="@+id/drawingViewContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:elevation="5dp"
         android:layout_margin="5dp"
+        android:padding="1dp"
         android:background="@drawable/bg_drawing_view_layout"
+        android:elevation="5dp"
         app:layout_constraintBottom_toTopOf="@id/paintColorsLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <ImageView
+            android:id="@+id/backgroundImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@mipmap/ic_launcher"
+            android:scaleType="centerCrop"/>
+
+
+        <com.eminokumus.drawingapp.DrawingView
+            android:id="@+id/drawingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80FFFFFF" />
+
+    </FrameLayout>
+
+    
 
     <LinearLayout
         android:id="@+id/paintColorsLinearLayout"
@@ -26,9 +45,10 @@
         app:layout_constraintBottom_toTopOf="@id/brushImageButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/drawingView">
+        app:layout_constraintTop_toBottomOf="@id/drawingViewContainer">
 
         <ImageButton
+            android:id="@+id/skinColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -37,6 +57,7 @@
             android:tag="@color/skin" />
 
         <ImageButton
+            android:id="@+id/blackColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -45,6 +66,7 @@
             android:tag="@color/black" />
 
         <ImageButton
+            android:id="@+id/redColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -53,6 +75,7 @@
             android:tag="@color/red" />
 
         <ImageButton
+            android:id="@+id/greenColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -61,6 +84,7 @@
             android:tag="@color/green" />
 
         <ImageButton
+            android:id="@+id/yellowColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -69,6 +93,7 @@
             android:tag="@color/yellow" />
 
         <ImageButton
+            android:id="@+id/seaBlueColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -77,12 +102,22 @@
             android:tag="@color/sea_blue" />
 
         <ImageButton
+            android:id="@+id/randomColorImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:background="@color/random"
             android:src="@drawable/pallet_normal"
             android:tag="@color/random" />
+
+        <ImageButton
+            android:id="@+id/whiteColorImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@color/white"
+            android:src="@drawable/pallet_normal"
+            android:tag="@color/white" />
 
 
     </LinearLayout>
