@@ -70,9 +70,10 @@ class MainActivity : AppCompatActivity() {
 
         initializeBrushAndColor()
 
-        setBrushImageButtonOnClickListener()
         setColorsOnClickListeners()
+        setBrushImageButtonOnClickListener()
         setGalleryImageButtonOnClickListener()
+        setUndoImageButtonOnClickListener()
 
 
         println("randomcolorHex: ${generateRandomColor()}")
@@ -93,6 +94,11 @@ class MainActivity : AppCompatActivity() {
     private fun setGalleryImageButtonOnClickListener() {
         binding.galleryImageButton.setOnClickListener {
             requestStoragePermission()
+        }
+    }
+    private fun setUndoImageButtonOnClickListener(){
+        binding.undoImageButton.setOnClickListener {
+            binding.drawingView.onClickUndo()
         }
     }
 

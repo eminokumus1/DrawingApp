@@ -20,6 +20,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var color = Color.BLACK
     private var canvas: Canvas? = null
     private val paths = ArrayList<CustomPath>()
+    private val undoPaths = ArrayList<CustomPath>()
 
     init {
         setUpDrawing()
@@ -45,13 +46,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         }
     }
 
-    private fun drawAllPathsTo(canvas: Canvas) {
-        for (path in paths) {
-            drawPaint!!.strokeWidth = path.brushThickness
-            drawPaint!!.color = path.color
-            canvas.drawPath(path, drawPaint!!)
-        }
-    }
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val touchX = event?.x
@@ -86,6 +81,21 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
         return true
 
+    }
+
+    private fun drawAllPathsTo(canvas: Canvas) {
+        for (path in paths) {
+            drawPaint!!.strokeWidth = path.brushThickness
+            drawPaint!!.color = path.color
+            canvas.drawPath(path, drawPaint!!)
+        }
+    }
+
+    fun onClickUndo(){
+        if (paths.isNotEmpty()){
+            undoPaths.add(paths.removeAt(paths.size-1))
+        }
+        invalidate()
     }
 
 
