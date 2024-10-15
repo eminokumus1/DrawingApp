@@ -1,10 +1,16 @@
 package com.eminokumus.drawingapp
 
+import android.Manifest
+import android.app.AlertDialog
 import android.app.Dialog
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
 import com.eminokumus.drawingapp.databinding.ActivityMainBinding
@@ -21,6 +27,32 @@ class MainActivity : AppCompatActivity() {
 
     private var currentColorImageButton: ImageButton? = null
 
+    val requestPermission: ActivityResultLauncher<Array<String>> =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach {
+                val permissionName = it.key
+                val isGranted = it.value
+
+                if (isGranted) {
+                    Toast.makeText(
+                        this,
+                        "Permission granted, now you can read the storage files.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    if (permissionName == Manifest.permission.READ_MEDIA_IMAGES){
+                        Toast.makeText(
+                            this,
+                            "Permission denied.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                }
+            }
+
+        }
+
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         setBrushImageButtonOnClickListener()
         setColorsOnClickListeners()
+        setGalleryImageButtonOnClickListener()
 
 
         println("randomcolorHex: ${generateRandomColor()}")
@@ -45,6 +78,12 @@ class MainActivity : AppCompatActivity() {
     private fun setBrushImageButtonOnClickListener() {
         binding.brushImageButton.setOnClickListener {
             showBrushSizeChooserDialog()
+        }
+    }
+
+    private fun setGalleryImageButtonOnClickListener(){
+        binding.galleryImageButton.setOnClickListener {
+            requestStoragePermission()
         }
     }
 
@@ -81,11 +120,27 @@ class MainActivity : AppCompatActivity() {
             blackColorImageButton.setOnClickListener { setColorOnClickListener(blackColorImageButton) }
             redColorImageButton.setOnClickListener { setColorOnClickListener(redColorImageButton) }
             greenColorImageButton.setOnClickListener { setColorOnClickListener(greenColorImageButton) }
-            yellowColorImageButton.setOnClickListener { setColorOnClickListener(yellowColorImageButton) }
-            seaBlueColorImageButton.setOnClickListener { setColorOnClickListener(seaBlueColorImageButton) }
+            yellowColorImageButton.setOnClickListener {
+                setColorOnClickListener(
+                    yellowColorImageButton
+                )
+            }
+            seaBlueColorImageButton.setOnClickListener {
+                setColorOnClickListener(
+                    seaBlueColorImageButton
+                )
+            }
             setRandomColorOnClickListener()
             whiteColorImageButton.setOnClickListener { setColorOnClickListener(whiteColorImageButton) }
         }
+    }
+
+    private fun setColorOnClickListener(colorButton: ImageButton) {
+        binding.drawingView.setColor(colorButton.tag.toString())
+        setPalletColorToPressed(colorButton)
+        setPalletColorToNormal(currentColorImageButton!!)
+        currentColorImageButton = colorButton
+
     }
 
     private fun setPalletColorToPressed(colorButton: ImageButton) {
@@ -100,16 +155,8 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun setColorOnClickListener(colorButton: ImageButton) {
-        binding.drawingView.setColor(colorButton.tag.toString())
-        setPalletColorToPressed(colorButton)
-        setPalletColorToNormal(currentColorImageButton!!)
-        currentColorImageButton = colorButton
-
-    }
-
-    private fun setRandomColorOnClickListener(){
-        binding.randomColorImageButton.setOnClickListener{
+    private fun setRandomColorOnClickListener() {
+        binding.randomColorImageButton.setOnClickListener {
             val randomColor = generateRandomColor()
             binding.drawingView.setColor(randomColor)
             setPalletColorToPressed(it as ImageButton)
@@ -119,10 +166,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun generateRandomColor(): String{
-        val randomColorInt = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+    private fun generateRandomColor(): String {
+        val randomColorInt =
+            Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
         val randomColorHex = randomColorInt.toHexString(HexFormat.Default)
         return StringBuilder("#").append(randomColorHex).toString()
+    }
+
+    private fun requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
+        ){
+            showRationaleDialog("Kids Drawing App",
+                "Kids Drawing App" + " needs to access your External Storage")
+        }else{
+            requestPermission.launch(arrayOf(
+                Manifest.permission.READ_MEDIA_IMAGES
+                // TODO - Add writing external storage permission
+            ))
+        }
+    }
+
+    private fun showRationaleDialog(title: String, message: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        builder.create().show()
     }
 
 }

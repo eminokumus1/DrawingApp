@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Drawing App</string>
+    <string name="skin_color_button">Skin Color Button</string>
+    <string name="black_color_button">Black Color Button</string>
+    <string name="red_color_button">Red Color Button</string>
+    <string name="green_color_button">Green Color Button</string>
+    <string name="yellow_color_button">Yellow Color Button</string>
+    <string name="sea_blue_color_button">Sea Blue Color Button</string>
+    <string name="random_color_button">Random Color Button</string>
+    <string name="white_color_button">White Color Button</string>
+    <string name="canvas_background_image">Canvas background image</string>
 </resources>
