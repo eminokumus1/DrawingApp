@@ -3,9 +3,11 @@ package com.eminokumus.drawingapp
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -27,6 +29,13 @@ class MainActivity : AppCompatActivity() {
 
     private var currentColorImageButton: ImageButton? = null
 
+    val openGalleryLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+            if (result.resultCode == RESULT_OK && result.data != null){
+                binding.backgroundImage.setImageURI(result.data?.data)
+            }
+        }
+
     val requestPermission: ActivityResultLauncher<Array<String>> =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.entries.forEach {
@@ -39,21 +48,21 @@ class MainActivity : AppCompatActivity() {
                         "Permission granted, now you can read the storage files.",
                         Toast.LENGTH_LONG
                     ).show()
+                    openGallery()
                 } else {
-                    if (permissionName == Manifest.permission.READ_MEDIA_IMAGES){
+                    if (permissionName == Manifest.permission.READ_MEDIA_IMAGES) {
                         Toast.makeText(
                             this,
                             "Permission denied.",
                             Toast.LENGTH_LONG
                         ).show()
                     }
-
                 }
             }
-
         }
 
-    @OptIn(ExperimentalStdlibApi::class)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -81,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setGalleryImageButtonOnClickListener(){
+    private fun setGalleryImageButtonOnClickListener() {
         binding.galleryImageButton.setOnClickListener {
             requestStoragePermission()
         }
@@ -178,14 +187,18 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Manifest.permission.READ_MEDIA_IMAGES
             )
-        ){
-            showRationaleDialog("Kids Drawing App",
-                "Kids Drawing App" + " needs to access your External Storage")
-        }else{
-            requestPermission.launch(arrayOf(
-                Manifest.permission.READ_MEDIA_IMAGES
-                // TODO - Add writing external storage permission
-            ))
+        ) {
+            showRationaleDialog(
+                "Kids Drawing App",
+                "Kids Drawing App" + " needs to access your External Storage"
+            )
+        } else {
+            requestPermission.launch(
+                arrayOf(
+                    Manifest.permission.READ_MEDIA_IMAGES
+                    // TODO - Add writing external storage permission
+                )
+            )
         }
     }
 
@@ -198,6 +211,12 @@ class MainActivity : AppCompatActivity() {
             }
 
         builder.create().show()
+    }
+
+    private fun openGallery() {
+        val pickIntent =
+            Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        openGalleryLauncher.launch(pickIntent)
     }
 
 }
