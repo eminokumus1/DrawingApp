@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private var currentColorImageButton: ImageButton? = null
+    var customProgressDialog: Dialog? = null
 
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -116,6 +117,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setSaveImageButtonOnClickListener(){
         binding.saveImageButton.setOnClickListener {
+            showProgressDialog()
             if (isReadStorageAllowed()){
                 lifecycleScope.launch {
                     val bitmapFromView = getBitmapFromView(binding.drawingView)
@@ -249,6 +251,19 @@ class MainActivity : AppCompatActivity() {
         builder.create().show()
     }
 
+    private fun showProgressDialog(){
+        customProgressDialog = Dialog(this)
+        customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+        customProgressDialog?.show()
+    }
+
+    private fun cancelProgressDialog(){
+        if (customProgressDialog != null){
+            customProgressDialog?.dismiss()
+            customProgressDialog = null
+        }
+    }
+
     private fun openGallery() {
         val pickIntent =
             Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -284,6 +299,7 @@ class MainActivity : AppCompatActivity() {
 
                     result = file.absolutePath
                     runOnUiThread {
+                        cancelProgressDialog()
                         showToastBasedOnSuccess(result)
                     }
                 }catch (e: Exception){
@@ -315,5 +331,7 @@ class MainActivity : AppCompatActivity() {
         externalCacheDir?.absoluteFile.toString()
                 + File.separator + "KidsDrawingApp_" + System.currentTimeMillis() / 1000 + ".png"
     )
+
+
 
 }
