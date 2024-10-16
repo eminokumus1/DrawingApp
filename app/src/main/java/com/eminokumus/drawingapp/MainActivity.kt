@@ -4,10 +4,14 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -15,8 +19,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
+import androidx.lifecycle.lifecycleScope
 import com.eminokumus.drawingapp.databinding.ActivityMainBinding
 import com.eminokumus.drawingapp.databinding.DialogBrushSizeBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.lang.StringBuilder
 import kotlin.random.Random
 
@@ -30,8 +41,8 @@ class MainActivity : AppCompatActivity() {
     private var currentColorImageButton: ImageButton? = null
 
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
-            if (result.resultCode == RESULT_OK && result.data != null){
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
                 binding.backgroundImage.setImageURI(result.data?.data)
             }
         }
@@ -62,7 +73,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -74,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         setBrushImageButtonOnClickListener()
         setGalleryImageButtonOnClickListener()
         setUndoImageButtonOnClickListener()
+        setSaveImageButtonOnClickListener()
 
 
         println("randomcolorHex: ${generateRandomColor()}")
@@ -96,9 +107,21 @@ class MainActivity : AppCompatActivity() {
             requestStoragePermission()
         }
     }
-    private fun setUndoImageButtonOnClickListener(){
+
+    private fun setUndoImageButtonOnClickListener() {
         binding.undoImageButton.setOnClickListener {
             binding.drawingView.onClickUndo()
+        }
+    }
+
+    private fun setSaveImageButtonOnClickListener(){
+        binding.saveImageButton.setOnClickListener {
+            if (isReadStorageAllowed()){
+                lifecycleScope.launch {
+                    val bitmapFromView = getBitmapFromView(binding.drawingView)
+                    saveBitmapFile(bitmapFromView)
+                }
+            }
         }
     }
 
@@ -180,6 +203,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun isReadStorageAllowed(): Boolean{
+        val result = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.READ_MEDIA_IMAGES)
+
+        return result == PackageManager.PERMISSION_GRANTED
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     private fun generateRandomColor(): String {
         val randomColorInt =
@@ -201,8 +231,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             requestPermission.launch(
                 arrayOf(
-                    Manifest.permission.READ_MEDIA_IMAGES
-                    // TODO - Add writing external storage permission
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
             )
         }
@@ -224,5 +254,66 @@ class MainActivity : AppCompatActivity() {
             Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         openGalleryLauncher.launch(pickIntent)
     }
+
+    private fun getBitmapFromView(view: View): Bitmap {
+        val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(returnedBitmap)
+        val background = view.background
+        if (background != null){
+            background.draw(canvas)
+        }else{
+            canvas.drawColor(Color.WHITE)
+        }
+        view.draw(canvas)
+
+        return returnedBitmap
+    }
+
+    private suspend fun saveBitmapFile(bitmap : Bitmap?): String{
+        var result = ""
+        withContext(Dispatchers.IO){
+            if(bitmap != null){
+                try{
+                    val bytes = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, bytes)
+
+                    val file = createFile()
+                    val fileOutputStream = FileOutputStream(file)
+                    fileOutputStream.write(bytes.toByteArray())
+                    fileOutputStream.close()
+
+                    result = file.absolutePath
+                    runOnUiThread {
+                        showToastBasedOnSuccess(result)
+                    }
+                }catch (e: Exception){
+                    result = ""
+                    e.printStackTrace()
+                }
+            }
+        }
+        return result
+    }
+
+    private fun showToastBasedOnSuccess(result: String) {
+        if (result.isNotEmpty()) {
+            Toast.makeText(
+                this@MainActivity,
+                "File saved successfully: $result",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                this@MainActivity,
+                "Something went wrong while saving the file",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun createFile() = File(
+        externalCacheDir?.absoluteFile.toString()
+                + File.separator + "KidsDrawingApp_" + System.currentTimeMillis() / 1000 + ".png"
+    )
 
 }

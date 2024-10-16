@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <FrameLayout
-        android:id="@+id/drawingViewContainer"
+        android:id="@+id/drawingViewFrameLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="5dp"
@@ -23,7 +23,6 @@
             android:id="@+id/backgroundImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@mipmap/ic_launcher"
             android:contentDescription="@string/canvas_background_image"
             android:scaleType="centerCrop" />
 
@@ -45,7 +44,7 @@
         app:layout_constraintBottom_toTopOf="@id/actionButtonsLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/drawingViewContainer">
+        app:layout_constraintTop_toBottomOf="@id/drawingViewFrameLayout">
 
         <ImageButton
             android:id="@+id/skinColorImageButton"
@@ -167,6 +166,15 @@
             android:padding="5dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_brush" />
+
+        <ImageButton
+            android:id="@+id/saveImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:padding="5dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_save" />
     </LinearLayout>
 
 
