@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.media.MediaScannerConnection
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -17,6 +18,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
@@ -116,10 +118,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setSaveImageButtonOnClickListener(){
+    private fun setSaveImageButtonOnClickListener() {
         binding.saveImageButton.setOnClickListener {
             showProgressDialog()
-            if (isReadStorageAllowed()){
+            if (isReadStorageAllowed()) {
                 lifecycleScope.launch {
                     val bitmapFromView = getBitmapFromView(binding.drawingView)
                     saveBitmapFile(bitmapFromView)
@@ -206,9 +208,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isReadStorageAllowed(): Boolean{
-        val result = ContextCompat.checkSelfPermission(this,
-            Manifest.permission.READ_MEDIA_IMAGES)
+    private fun isReadStorageAllowed(): Boolean {
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
+        } else {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+        }
+
 
         return result == PackageManager.PERMISSION_GRANTED
     }
@@ -233,10 +245,18 @@ class MainActivity : AppCompatActivity() {
             )
         } else {
             requestPermission.launch(
-                arrayOf(
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                } else {
+                    arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                }
+
             )
         }
     }
@@ -252,14 +272,14 @@ class MainActivity : AppCompatActivity() {
         builder.create().show()
     }
 
-    private fun showProgressDialog(){
+    private fun showProgressDialog() {
         customProgressDialog = Dialog(this)
         customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
         customProgressDialog?.show()
     }
 
-    private fun cancelProgressDialog(){
-        if (customProgressDialog != null){
+    private fun cancelProgressDialog() {
+        if (customProgressDialog != null) {
             customProgressDialog?.dismiss()
             customProgressDialog = null
         }
@@ -275,9 +295,9 @@ class MainActivity : AppCompatActivity() {
         val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(returnedBitmap)
         val background = view.background
-        if (background != null){
+        if (background != null) {
             background.draw(canvas)
-        }else{
+        } else {
             canvas.drawColor(Color.WHITE)
         }
         view.draw(canvas)
@@ -285,11 +305,11 @@ class MainActivity : AppCompatActivity() {
         return returnedBitmap
     }
 
-    private suspend fun saveBitmapFile(bitmap : Bitmap?): String{
+    private suspend fun saveBitmapFile(bitmap: Bitmap?): String {
         var filePath = ""
-        withContext(Dispatchers.IO){
-            if(bitmap != null){
-                try{
+        withContext(Dispatchers.IO) {
+            if (bitmap != null) {
+                try {
                     val bytes = ByteArrayOutputStream()
                     bitmap.compress(Bitmap.CompressFormat.PNG, 90, bytes)
 
@@ -303,7 +323,7 @@ class MainActivity : AppCompatActivity() {
                         cancelProgressDialog()
                         popUpImageShareIfSaveSuccessful(filePath)
                     }
-                }catch (e: Exception){
+                } catch (e: Exception) {
                     filePath = ""
                     e.printStackTrace()
                 }
@@ -334,8 +354,8 @@ class MainActivity : AppCompatActivity() {
                 + File.separator + "KidsDrawingApp_" + System.currentTimeMillis() / 1000 + ".png"
     )
 
-    private fun shareImage(filePath: String){
-        MediaScannerConnection.scanFile(this, arrayOf(filePath), null){ path, uri ->
+    private fun shareImage(filePath: String) {
+        MediaScannerConnection.scanFile(this, arrayOf(filePath), null) { path, uri ->
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
             shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
@@ -343,7 +363,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(shareIntent, "Share"))
         }
     }
-
 
 
 }

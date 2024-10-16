@@ -9,5 +9,9 @@
     <string name="random_color_button">Random Color Button</string>
     <string name="white_color_button">White Color Button</string>
     <string name="canvas_background_image">Canvas background image</string>
-    <string name="please_wait">Please Wait...</string>
+    <string name="please_wait">Please Wait…</string>
+    <string name="gallery_button">Gallery Button</string>
+    <string name="undo_button">Undo Button</string>
+    <string name="brush_chooser_button">Brush Chooser Button</string>
+    <string name="save_image_button">Save Image Button</string>
 </resources>
