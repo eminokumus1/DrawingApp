@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -285,7 +286,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun saveBitmapFile(bitmap : Bitmap?): String{
-        var result = ""
+        var filePath = ""
         withContext(Dispatchers.IO){
             if(bitmap != null){
                 try{
@@ -297,27 +298,28 @@ class MainActivity : AppCompatActivity() {
                     fileOutputStream.write(bytes.toByteArray())
                     fileOutputStream.close()
 
-                    result = file.absolutePath
+                    filePath = file.absolutePath
                     runOnUiThread {
                         cancelProgressDialog()
-                        showToastBasedOnSuccess(result)
+                        popUpImageShareIfSaveSuccessful(filePath)
                     }
                 }catch (e: Exception){
-                    result = ""
+                    filePath = ""
                     e.printStackTrace()
                 }
             }
         }
-        return result
+        return filePath
     }
 
-    private fun showToastBasedOnSuccess(result: String) {
-        if (result.isNotEmpty()) {
+    private fun popUpImageShareIfSaveSuccessful(filePath: String) {
+        if (filePath.isNotEmpty()) {
             Toast.makeText(
                 this@MainActivity,
-                "File saved successfully: $result",
+                "File saved successfully: $filePath",
                 Toast.LENGTH_SHORT
             ).show()
+            shareImage(filePath)
         } else {
             Toast.makeText(
                 this@MainActivity,
@@ -331,6 +333,16 @@ class MainActivity : AppCompatActivity() {
         externalCacheDir?.absoluteFile.toString()
                 + File.separator + "KidsDrawingApp_" + System.currentTimeMillis() / 1000 + ".png"
     )
+
+    private fun shareImage(filePath: String){
+        MediaScannerConnection.scanFile(this, arrayOf(filePath), null){ path, uri ->
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, "Share"))
+        }
+    }
 
 
 
